@@ -276,6 +276,19 @@ constexpr SDL_Color colour_lookup[] = {
 	SDL_Color{ 255,255,255,255 },// F
 };
 
+//Unicode workaround for Linux
+#ifdef __linux__
+	#include <locale>
+	#include <codecvt>
+
+	//Convert Unicode string to std::string
+	void unicode_convert(std::wstring* orig, std::string* dest)
+	{
+		std::wstring_convert<std::codecvt_utf8<wchar_t>> conv1;
+		*dest = conv1.to_bytes(*orig);
+	}
+#endif
+
 class olcSprite
 {
 public:
@@ -379,6 +392,10 @@ public:
 
 #ifdef __APPLE__
 		std::ofstream f(path.c_str(), std::ios::out | std::ios::binary);
+#elif defined(__linux__)
+		std::string File;
+		unicode_convert(&sFile, &File);
+		std::ofstream f(File.c_str(), std::ios::out | std::ios::binary);
 #else
 		std::ofstream f(sFile.c_str(), std::ios::out | std::ios::binary);
 #endif
@@ -405,6 +422,10 @@ public:
 
 #ifdef __APPLE__
 		std::ifstream f(path.c_str(), std::ios::in | std::ios::binary);
+#elif defined(__linux__)
+		std::string File;
+		unicode_convert(&sFile, &File);
+		std::ifstream f(File.c_str(), std::ios::in | std::ios::binary);
 #else
 		std::ifstream f(sFile.c_str(), std::ios::in | std::ios::binary);
 #endif
